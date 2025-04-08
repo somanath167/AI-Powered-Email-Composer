@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Email Suggestion Extension</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 500px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #6b48ff, #ff6b97);
+      color: #dedbdb;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      color: rgb(239, 239, 242);
+      display: none; /* Default hidden */
+    }
+  
+    #login-tab .header {
+      display: block; /* Show header in login tab */
+    }
+  
+    #composer-tab .header {
+      display: block; /* Show header in composer tab */
+    }
+  
+    .header img.avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  
+    .header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  
+    .header .typing-text {
+      margin: 5px 0 0;
+      font-size: 12px;
+      opacity: 0.9;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid white;
+      animation: typing 3s steps(30, end), blink-caret 0.75s step-end infinite;
+    }
+  
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+  
+    @keyframes blink-caret {
+      from, to { border-color: transparent; }
+      50% { border-color: white; }
+    }
+  
+    .tab {
+  display: none;
+  width: 100%;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  background: linear-gradient(135deg, #6b48ff, #ff6b97);
+  background-size: 200% 200%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+    .tab.active {
+      display: block;
+    }
+  
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+  
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: margin-right 2s ease-in-out 0.5s;
+    }
+  
+    button:hover {
+      background: #0056b3;
+    }
+  
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+  
+    .tab-buttons {
+      display: none;
+    }
+  
+    #composer-tab {
+      position: relative;
+      height: 480px;
+      overflow-y: auto;
+      padding-bottom: 20px;
+    }
+  
+    pre#output {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      max-height: 150px;
+      overflow-y: auto;
+      margin: 0;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      color: #333;
+      z-index: 10;
+    }
+  
+    #full-email-form {
+      margin-top: 180px;
+    }
+  
+    #loading {
+      display: none;
+      color: #007bff;
+      font-style: italic;
+      margin-top: 5px;
+    }
+  
+    #composer-content {
+      display: none;
+    }
+  
+    .nav-link {
+      color: #efefef;
+      text-decoration: none;
+      font-size: 12px;
+      margin-top: 10px;
+      display: block;
+    }
+  
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="login-tab" class="tab active">
+    <div class="header">
+      <img src="https://img.freepik.com/premium-photo/customer-service-representative-digital-avatar-generative-ai_934475-9075.jpg" alt="InstaCompose AI Avatar" class="avatar">
+      <h2>Welcome to InstaCompose AI</h2>
+      <div class="typing-text">Your smart email assistant for Gmail and Outlook.</div>
+    </div>
+    <h3>Login</h3>
+    <input id="login-email" placeholder="Email" type="email">
+    <input id="login-password" placeholder="Password" type="password">
+    <button id="login-btn">Login</button>
+    <a href="#" id="register-link" class="nav-link">Not registered? Register here</a>
+  </div>
+
+  <div id="register-tab" class="tab">
+    <h3>Register</h3>
+    <input id="reg-name" placeholder="Full Name" type="text">
+    <input id="reg-email" placeholder="Email" type="email">
+    <input id="reg-phone" placeholder="Phone Number" type="tel">
+    <input id="reg-designation" placeholder="Designation" type="text">
+    <input id="reg-password" placeholder="Password" type="password">
+    <button id="register-btn">Register</button>
+    <a href="#" id="login-link" class="nav-link">Already have an account? Login here</a>
+  </div>
+
+  <div id="composer-tab" class="tab">
+    <div class="header">
+      <img src="https://img.freepik.com/premium-photo/real-estate-agent-digital-avatar-generative-ai_934475-9349.jpg" alt="InstaCompose AI Avatar" class="avatar">
+    </div>
+    <h3 id="greeting"></h3>
+    <div id="composer-content">
+      <p>How can i help you today?</p>
+      <textarea id="email-input" placeholder="Type email text here to test..." style="display: none;"></textarea>
+      <button id="get-suggestion-btn">Suggestion</button>
+      <button id="get-full-email-btn">Full Email</button>
+      <button id="get-reply-suggestion-btn">Reply Suggestion</button>
+      <button id="get-smart-summary-btn">Smart Email Summary</button>
+      <pre id="output"></pre>
+      <button id="copy-reply-btn" style="display: none;">Copy Reply</button>
+      <button id="reset-btn" style="display: none;">Reset</button>
+      <div id="full-email-form" style="display: none;">
+        <input id="full-recipient" placeholder="Recipient (e.g., John Doe)" type="text">
+        <select id="full-tone">
+          <option value="formal">Formal</option>
+          <option value="casual">Casual</option>
+          <option value="persuasive">Persuasive</option>
+        </select>
+        <input id="full-purpose" placeholder="Purpose (e.g., request a meeting)" type="text">
+        <button id="submit-full-email">Submit</button>
+      </div>
+      <div id="loading">Loading, please wait...</div>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
